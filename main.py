@@ -8,7 +8,8 @@ from fastapi import FastAPI, HTTPException, status, Form
 from fastapi.params import Depends
 from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
 from typing import Annotated
-from jose import jwt, ExpiredSignatureError
+from jose import jwt, ExpiredSignatureError, JWTError
+from jose.exceptions import JWTClaimsError
 from pydantic import BaseModel, ValidationError
 from sniffio import AsyncLibraryNotFoundError
 from starlette.status import HTTP_400_BAD_REQUEST
@@ -89,7 +90,16 @@ def decode_token(token: Annotated[str, Depends(oauth2_schema)])-> dict:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Endpoint protegido por token'
         )
-
+    except JWTClaimsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Endpoint protegido por token'
+        )
+    except JWTError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Token Invalido'
+        )
 
 
 users = {
