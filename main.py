@@ -102,7 +102,7 @@ users = {
 @app.post('/obtener-token')
 def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user = users.get(form_data.username)
-    if not user:
+    if not user or users.get('enmanuelbcf')['password'] != form_data.password :
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='No se encontro el usuario')
     token = encode_token({'username': user['username'], 'email': user['email']})
     return {'access_token': token,
