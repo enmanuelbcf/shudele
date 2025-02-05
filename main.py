@@ -1,15 +1,21 @@
 import sqlite3
 from datetime import datetime, timedelta
+from http.client import responses, HTTPResponse
 from logging import raiseExceptions
 from wsgiref.util import request_uri
 
 import uvicorn
-from fastapi import FastAPI, HTTPException, status, Form
+from fastapi import FastAPI, HTTPException, status
 from fastapi.params import Depends
 from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
 from typing import Annotated
 from jose import jwt, ExpiredSignatureError, JWTError
 from jose.exceptions import JWTClaimsError
+from starlette.responses import JSONResponse
+import json
+
+from Model.university_model import  University, Enum_estados
+import uuid
 from pydantic import BaseModel, ValidationError
 from sniffio import AsyncLibraryNotFoundError
 from starlette.status import HTTP_400_BAD_REQUEST
@@ -28,8 +34,44 @@ def conectar_db():
         print(f'Error al conectar: {e}')
         return None
 
+def create_universidad(universidad: University ):
+    con = conectar_db()
+    if con is None:
+        return {"status": "error", "message": "Error al conectar a la base de datos", "data": []}
+
+    try:
+        cursor = con.cursor()
+        datos_insertados = cursor.execute("INSERT into Universidad values(?,?,?,?)",
+                                          (
+            universidad.universidad_id,
+            universidad.nombre_universidad,
+            universidad.acronimo_universidad,
+            universidad.foto
+        ))
+
+
+        if datos_insertados.rowcount > 0:
+            con.commit()
+            return {'status': 'success',
+                    'data': {
+                        'universidad_id':universidad.universidad_id,
+                        'nombre_universidad':universidad.nombre_universidad,
+                        'acronimo_universidad': universidad.acronimo_universidad,
+                        'foto': universidad.foto
+                        }
+                    }
+        return  None
+
+    except sqlite3.Error as e:
+        print(f'Error en la consulta: {e}')
+        return None
+
+
+
+
+
 # Obtener todas las universidades y devolver un objeto JSON clave-valor
-def get_all():
+def get_all_universidades():
     con = conectar_db()
     if con is None:
         return {"status": "error", "message": "Error al conectar a la base de datos", "data": []}
@@ -41,7 +83,7 @@ def get_all():
         con.close()  # Cerrar conexión
 
         if rows:
-            data = [dict(row) for row in rows]  # Convertir cada fila en un diccionario clave-valor
+            data = [dict(row) for row in rows]
             return data
         else:
             return None
@@ -50,7 +92,7 @@ def get_all():
         print(f'Error en la consulta: {e}')
         return None
 
-def get_one(id):
+def get_one_universidad(id):
     con = conectar_db()
     if con is None:
         return {"status": "error", "message": "Error al conectar a la base de datos", "data": []}
@@ -122,7 +164,7 @@ def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
 @app.get("/universidad/obtener-universidades")
 def obtener_universidades(my_user: Annotated[dict, Depends(decode_token)]):
     try:
-        data = get_all()
+        data = get_all_universidades()
 
         if not data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No se encontraron datos")
@@ -142,9 +184,9 @@ def obtener_universidades(my_user: Annotated[dict, Depends(decode_token)]):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Error Interno')
 
 @app.get("/universidad/obtener-universidad/{id}")
-def obtener_universid(id: int, my_user: Annotated[dict, Depends(decode_token)]):  # Protegido con token
+def obtener_universidad(id: str, my_user: Annotated[dict, Depends(decode_token)]):  # Protegido con token
     try:
-        data = get_one(id)
+        data = get_one_universidad(id)
 
         if not data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No se encontraron datos")
@@ -162,6 +204,20 @@ def obtener_universid(id: int, my_user: Annotated[dict, Depends(decode_token)]):
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error Interno")
 
+@app.post('/universidad/create_universidad')
+def crear_universidad(universidad: University, my_user: Annotated[dict, Depends(decode_token)]):
+    try:
+        data = create_universidad(universidad=universidad)
+
+        if not data:
+            HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='No se pudo crear el usuario')
+
+        return JSONResponse(status_code=status.HTTP_201_CREATED, content=data)
+    except HTTPException as err:
+        raise err
+
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error Interno")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
