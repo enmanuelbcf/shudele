@@ -209,8 +209,8 @@ def crear_universidad(universidad: University, my_user: Annotated[dict, Depends(
     try:
         data = create_universidad(universidad=universidad)
 
-        if not data:
-            HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='No se pudo crear el usuario')
+        if  data is None:
+           raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='EL usuario ya existe')
 
         return JSONResponse(status_code=status.HTTP_201_CREATED, content=data)
     except HTTPException as err:
