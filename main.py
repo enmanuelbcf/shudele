@@ -71,7 +71,7 @@ def get_one(id):
         return None
 
 app = FastAPI()
-oauth2_schema = OAuth2PasswordBearer(tokenUrl='token')
+oauth2_schema = OAuth2PasswordBearer(tokenUrl='obtener-token')
 
 def encode_token(payload: dict) -> str:
     expiration = datetime.utcnow() + timedelta(minutes=30)
@@ -99,7 +99,7 @@ users = {
         'password': 'Prueba01*'
     }
 }
-@app.post('/token')
+@app.post('/obtener-token')
 def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user = users.get(form_data.username)
     if not user:
