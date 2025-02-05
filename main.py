@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime, timedelta
 from logging import raiseExceptions
 from wsgiref.util import request_uri
 
@@ -7,7 +8,7 @@ from fastapi import FastAPI, HTTPException, status, Form
 from fastapi.params import Depends
 from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
 from typing import Annotated
-from jose import jwt
+from jose import jwt, ExpiredSignatureError
 from pydantic import BaseModel, ValidationError
 from sniffio import AsyncLibraryNotFoundError
 from starlette.status import HTTP_400_BAD_REQUEST
@@ -72,14 +73,24 @@ def get_one(id):
 app = FastAPI()
 oauth2_schema = OAuth2PasswordBearer(tokenUrl='token')
 
-def encode_token(pyload: dict)->str:
-    token = jwt.encode(pyload,'my-secret', algorithm='HS256')
+def encode_token(payload: dict) -> str:
+    expiration = datetime.utcnow() + timedelta(minutes=30)
+    payload.update({"exp": expiration})
+    token = jwt.encode(payload, 'my-secret', algorithm='HS256')
     return token
 
 def decode_token(token: Annotated[str, Depends(oauth2_schema)])-> dict:
-    data = jwt.decode(token, 'my-secret', algorithms=['HS256'])
-    user = users.get(data['username'])
-    return user
+    try:
+        data = jwt.decode(token, 'my-secret', algorithms=['HS256'])
+        user = users.get(data['username'])
+        return user
+    except ExpiredSignatureError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Endpoint protegido por token'
+        )
+
+
 
 users = {
     'enmanuelbcf':{
@@ -94,7 +105,9 @@ def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='No se encontro el usuario')
     token = encode_token({'username': user['username'], 'email': user['email']})
-    return {'access_token': token}
+    return {'access_token': token,
+            'exp': 30
+            }
 
 @app.get("/universidad/obtener-universidades")
 def obtener_universidades(my_user: Annotated[dict, Depends(decode_token)]):
