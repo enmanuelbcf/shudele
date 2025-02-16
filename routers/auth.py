@@ -7,7 +7,7 @@ router = APIRouter(prefix='/auth', tags=['auth'])
 db = ServiceData()
 
 oauth2_schema = OAuth2PasswordBearer(tokenUrl='/auth/obtener-token')
-es_prod = True
+es_prod = False
 if es_prod:
     secret_value = os.getenv('MY_SECRET_KEY')
 else:

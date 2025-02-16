@@ -1,6 +1,7 @@
 import os
 import sqlite3
 
+
 from Model.app_models import University, Usuarios
 
 
@@ -179,5 +180,4 @@ class ServiceData:
         except sqlite3.Error as e:
             print(f'Error en la consulta: {e}')
             return None
-
 
