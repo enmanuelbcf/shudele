@@ -1,7 +1,7 @@
 import uuid
 from enum import Enum
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field,EmailStr
 from uuid import UUID
 
 
@@ -15,3 +15,10 @@ class University(BaseModel):
     nombre_universidad: str = Field(max_length=50)
     acronimo_universidad: str = Field(max_length=8)
     foto: Optional[str]
+
+class Usuarios(BaseModel):
+    usuario_id: str
+    username: str = Field(max_length=10)
+    email: EmailStr
+    password: str = Field(max_length=8, min_length=1)
+
