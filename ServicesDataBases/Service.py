@@ -1,7 +1,6 @@
 import os.path
 import sqlite3
-from Model.university_model import University
-
+from Model.app_models import University, Usuarios
 
 
 class ServiceData:
@@ -137,7 +136,7 @@ class ServiceData:
 
         try:
             cursor = con.cursor()
-            cursor.execute("SELECT * FROM usuario where usuario_id = ? ", [id])
+            cursor.execute("SELECT * FROM usuario where username = ? ", [id])
             rows = cursor.fetchall()
             con.close()  # Cerrar conexión
 
@@ -151,5 +150,33 @@ class ServiceData:
             print(f'Error en la consulta: {e}')
             return None
 
+    def create_usuario(self, usuario: Usuarios):
+        con = self._strcon
+
+        if con is None:
+            return {"status": "error", "message": "Error al conectar a la base de datos", "data": []}
+
+        try:
+            cursor = con.cursor()
+            datos_insertados = cursor.execute("INSERT into usuario values(?,?,?,?)",
+                                              (
+                                                  usuario.usuario_id.lower(),
+                                                  usuario.username.lower(),
+                                                  usuario.email.lower(),
+                                                  usuario.password
+                                              ))
+
+            if datos_insertados.rowcount > 0:
+                con.commit()
+                return {'status': 'success',
+                        'data': {
+                            'usuario_id':  usuario.usuario_id,
+                        }
+                        }
+            return None
+
+        except sqlite3.Error as e:
+            print(f'Error en la consulta: {e}')
+            return None
 
 

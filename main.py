@@ -15,7 +15,7 @@ from jose.exceptions import JWTClaimsError
 from starlette.responses import JSONResponse
 import json
 
-from Model.university_model import  University, Enum_estados
+from Model.app_models import  University, Enum_estados
 import uuid
 from pydantic import BaseModel, ValidationError
 from sniffio import AsyncLibraryNotFoundError
@@ -74,10 +74,12 @@ users = {
 }
 @app.post('/obtener-token')
 def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    user = users.get(form_data.username)
-    if not user or users.get('enmanuelbcf')['password'] != form_data.password :
+    db.conectar_db()
+    # user = users.get(form_data.username)
+    user = db.get_one_usuario(form_data.username)
+    if not user or user[0].get('password') != form_data.password:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='No se encontro el usuario')
-    token = encode_token({'username': user['username'], 'email': user['email']})
+    token = encode_token({'username': user[0]['username'], 'email': user[0]['email']})
     return {'access_token': token,
             'exp': 30
             }
@@ -132,6 +134,22 @@ def crear_universidad(universidad: University, my_user: Annotated[dict, Depends(
     try:
         db.conectar_db()
         data = db.create_universidad(universidad=universidad)
+
+        if  data is None:
+           raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='EL usuario ya existe')
+
+        return JSONResponse(status_code=status.HTTP_201_CREATED, content=data)
+    except HTTPException as err:
+        raise err
+
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error Interno")
+
+@app.post('/usuarios/crear')
+def crear_usuario(usuario: Usuarios, my_user: Annotated[dict, Depends(decode_token)]):
+    try:
+        db.conectar_db()
+        data = db.create_usuario(usuario=usuario)
 
         if  data is None:
            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='EL usuario ya existe')
