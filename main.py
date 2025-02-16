@@ -83,7 +83,7 @@ def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
             }
 
 @app.get("/universidad/obtener-universidades")
-def obtener_universidades():
+def obtener_universidades(my_user: Annotated[dict, Depends(decode_token)]):
     try:
         db.conectar_db()
         data = db.get_all_universidades()
