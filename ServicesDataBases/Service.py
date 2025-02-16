@@ -3,6 +3,7 @@ import sqlite3
 
 
 from Model.app_models import University, Usuarios
+from utlis.funciones_utlis import generate_salt
 
 
 class ServiceData:
@@ -165,7 +166,7 @@ class ServiceData:
                                                   usuario.usuario_id.lower(),
                                                   usuario.username.lower(),
                                                   usuario.email.lower(),
-                                                  usuario.password
+                                                  generate_salt(usuario.password)
                                               ))
 
             if datos_insertados.rowcount > 0:

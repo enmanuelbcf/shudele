@@ -20,7 +20,7 @@ class Usuarios(BaseModel):
     usuario_id: str
     username: str = Field(max_length=10)
     email: EmailStr
-    password: str = Field(max_length=8, min_length=1)
+    password: str = Field(min_length=1)
 
     # Función para encriptar la contraseña
 

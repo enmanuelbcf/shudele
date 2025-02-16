@@ -3,6 +3,8 @@ from utlis.common_imports import (
 from ServicesDataBases.Service import ServiceData
 from datetime import datetime, timedelta
 
+from utlis.funciones_utlis import vefify_salt
+
 router = APIRouter(prefix='/auth', tags=['auth'])
 db = ServiceData()
 
@@ -19,7 +21,8 @@ else:
 def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     db.conectar_db()
     user = db.get_one_usuario(form_data.username)
-    if not user or user[0].get('password') != form_data.password :
+    psd = vefify_salt(form_data.password, user[0].get('password'))
+    if not user or not psd :
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='No se encontro el usuario')
     token = encode_token({'username': user[0]['username'], 'email': user[0]['email']})
     return {'access_token': token,
