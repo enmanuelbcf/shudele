@@ -3,7 +3,7 @@
 import uvicorn
 from fastapi import FastAPI
 from routers import  usuario, universidades, auth
-from ServicesDataBases.Service import *
+
 
 
 app = FastAPI()
