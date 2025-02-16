@@ -18,7 +18,7 @@ class University(BaseModel):
 
 class Usuarios(BaseModel):
     usuario_id: str
-    username: str = Field(max_length=10)
+    username: str = Field(max_length=20)
     email: EmailStr
     password: str = Field(min_length=1)
 
