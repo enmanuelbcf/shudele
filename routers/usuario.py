@@ -2,8 +2,7 @@ from utlis.common_imports import APIRouter, Depends, HTTPException, JSONResponse
 from ServicesDataBases.Service import ServiceData
 from routers.auth import decode_token
 
-PATH = os.path.abspath('DataBases/db')
-db = ServiceData(con=PATH)
+db = ServiceData()
 
 router = APIRouter(prefix='/usuarios', tags=['usuarios'])
 

@@ -3,8 +3,7 @@ from ServicesDataBases.Service import ServiceData
 from routers.auth import decode_token
 
 router = APIRouter(prefix='/universidades', tags=['universidades'])
-PATH = os.path.abspath('DataBases/db')
-db = ServiceData(con=PATH)
+db = ServiceData()
 
 @router.get("/obtener-universidades")
 def obtener_universidades(my_user: Annotated[dict, Depends(decode_token)]):

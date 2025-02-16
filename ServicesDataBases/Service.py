@@ -1,10 +1,12 @@
+import os
 import sqlite3
-from utlis.common_imports import University, Usuarios
+
+from Model.app_models import University, Usuarios
 
 
 class ServiceData:
-    def __init__(self, con):
-        self._con = con
+    def __init__(self):
+        self._con = os.path.abspath('DataBases/db')
         self._strcon = ''
 
     @property
@@ -34,7 +36,7 @@ class ServiceData:
 
     def create_universidad(self, universidad: University):
         con = self._strcon
-
+    #
         if con is None:
             return {"status": "error", "message": "Error al conectar a la base de datos", "data": []}
 

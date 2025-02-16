@@ -4,11 +4,10 @@ from ServicesDataBases.Service import ServiceData
 from datetime import datetime, timedelta
 
 router = APIRouter(prefix='/auth', tags=['auth'])
-PATH = os.path.abspath('DataBases/db')
-db = ServiceData(con=PATH)
+db = ServiceData()
 
 oauth2_schema = OAuth2PasswordBearer(tokenUrl='/auth/obtener-token')
-es_prod = True
+es_prod = False
 if es_prod:
     secret_value = os.getenv('MY_SECRET_KEY')
 else:
