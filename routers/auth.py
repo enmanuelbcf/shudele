@@ -21,13 +21,16 @@ else:
 def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     db.conectar_db()
     user = db.get_one_usuario(form_data.username)
-    psd = vefify_salt(form_data.password, user[0].get('password'))
-    if not user or not psd :
+
+    if not user :
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='No se encontro el usuario')
+    psd = vefify_salt(form_data.password, user[0].get('password'))
+    if not psd:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Contraseña Incorrecta')
     token = encode_token({'username': user[0]['username'], 'email': user[0]['email']})
     return {'access_token': token,
-            'exp': 3600
-            }
+        'exp': 3600
+        }
 
 def encode_token(payload: dict) -> str:
     expiration = datetime.utcnow() + timedelta(seconds=3600)
