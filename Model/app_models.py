@@ -2,7 +2,7 @@ import uuid
 from enum import Enum
 from typing import Optional
 from pydantic import BaseModel, Field,EmailStr
-from uuid import UUID
+from passlib.context import CryptContext
 
 
 class Enum_estados(str, Enum):
@@ -20,5 +20,8 @@ class Usuarios(BaseModel):
     usuario_id: str
     username: str = Field(max_length=10)
     email: EmailStr
-    password: str = Field(max_length=8, min_length=1)
+    password: str = Field(min_length=1)
 
+    # Función para encriptar la contraseña
+
+    
