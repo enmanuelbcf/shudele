@@ -30,7 +30,7 @@ def obtener_universidades(my_user: Annotated[dict, Depends(decode_token)]):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Error Interno')
 
 @router.get("/obtener-universidad/{id}")
-def obtener_universidad(id: str, my_user: Annotated[dict, Depends(decode_token)]):  # Protegido con token
+def obtener_universidad(id: str, my_user: Annotated[dict, Depends(decode_token)]):
     try:
         db.conectar_db()
         data = db.get_one_universidad(id)

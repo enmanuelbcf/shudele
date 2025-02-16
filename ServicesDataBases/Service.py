@@ -1,5 +1,5 @@
 import sqlite3
-from Model.app_models import University, Usuarios
+from utlis.common_imports import University, Usuarios
 
 
 class ServiceData:
