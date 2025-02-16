@@ -1,3 +1,4 @@
+import os.path
 import sqlite3
 from datetime import datetime, timedelta
 from http.client import responses, HTTPResponse
@@ -20,12 +21,20 @@ from pydantic import BaseModel, ValidationError
 from sniffio import AsyncLibraryNotFoundError
 from starlette.status import HTTP_400_BAD_REQUEST
 
-from ServicesDataBases.Service import get_all_universidades, get_one_universidad, create_universidad
+from ServicesDataBases.Service import *
 
 # Conectar a la base de datos
 
 
 app = FastAPI()
+
+PATH = os.path.abspath('DataBases/db')
+
+db = ServiceData(con=PATH)
+
+
+
+
 oauth2_schema = OAuth2PasswordBearer(tokenUrl='obtener-token')
 
 def encode_token(payload: dict) -> str:
@@ -74,9 +83,10 @@ def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
             }
 
 @app.get("/universidad/obtener-universidades")
-def obtener_universidades(my_user: Annotated[dict, Depends(decode_token)]):
+def obtener_universidades():
     try:
-        data = get_all_universidades()
+        db.conectar_db()
+        data = db.get_all_universidades()
 
         if not data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No se encontraron datos")
@@ -98,7 +108,8 @@ def obtener_universidades(my_user: Annotated[dict, Depends(decode_token)]):
 @app.get("/universidad/obtener-universidad/{id}")
 def obtener_universidad(id: str, my_user: Annotated[dict, Depends(decode_token)]):  # Protegido con token
     try:
-        data = get_one_universidad(id)
+        db.conectar_db()
+        data = db.get_one_universidad(id)
 
         if not data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No se encontraron datos")
@@ -119,7 +130,8 @@ def obtener_universidad(id: str, my_user: Annotated[dict, Depends(decode_token)]
 @app.post('/universidad/create_universidad')
 def crear_universidad(universidad: University, my_user: Annotated[dict, Depends(decode_token)]):
     try:
-        data = create_universidad(universidad=universidad)
+        db.conectar_db()
+        data = db.create_universidad(universidad=universidad)
 
         if  data is None:
            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='EL usuario ya existe')
