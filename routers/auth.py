@@ -1,0 +1,50 @@
+from utlis.common_imports import (
+    APIRouter, Depends, HTTPException, OAuth2PasswordRequestForm, OAuth2PasswordBearer, jwt, ExpiredSignatureError, JWTClaimsError, JWTError, os, Annotated, status)
+from ServicesDataBases.Service import ServiceData
+from datetime import datetime, timedelta
+
+router = APIRouter(prefix='/auth', tags=['auth'])
+PATH = os.path.abspath('DataBases/db')
+db = ServiceData(con=PATH)
+
+oauth2_schema = OAuth2PasswordBearer(tokenUrl='/auth/obtener-token')
+
+@router.post('/obtener-token')
+def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+    db.conectar_db()
+    user = db.get_one_usuario(form_data.username)
+    if not user or user[0].get('password') != form_data.password :
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='No se encontro el usuario')
+    token = encode_token({'username': user[0]['username'], 'email': user[0]['email']})
+    return {'access_token': token,
+            'exp': 30
+            }
+
+def encode_token(payload: dict) -> str:
+    expiration = datetime.utcnow() + timedelta(minutes=30)
+    payload.update({"exp": expiration})
+    token = jwt.encode(payload, 'my-secret', algorithm='HS256')
+    return token
+
+def decode_token(token: Annotated[str, Depends(oauth2_schema)])-> dict:
+    try:
+        data = jwt.decode(token, 'my-secret', algorithms=['HS256'])
+        # user = .get(data['username'])
+        db.conectar_db()
+        user = db.get_one_usuario(data['username'])
+        return user
+    except ExpiredSignatureError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Endpoint protegido por token'
+        )
+    except JWTClaimsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Endpoint protegido por token'
+        )
+    except JWTError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Token Invalido'
+        )

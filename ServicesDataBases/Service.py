@@ -1,4 +1,3 @@
-import os.path
 import sqlite3
 from Model.app_models import University, Usuarios
 
