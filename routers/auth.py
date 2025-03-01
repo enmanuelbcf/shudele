@@ -32,8 +32,8 @@ def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
         return {'access_token': token,
             'exp': 3600
             }
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error Interno")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error Interno {e}")
 
 def encode_token(payload: dict) -> str:
     expiration = datetime.utcnow() + timedelta(seconds=3600)

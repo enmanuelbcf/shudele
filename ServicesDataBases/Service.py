@@ -1,3 +1,4 @@
+import json
 import os
 import sqlite3
 
@@ -38,7 +39,7 @@ class ServiceData:
 
     def create_universidad(self, universidad: University):
         con = self._strcon
-    #
+
         if con is None:
             return {"status": "error", "message": "Error al conectar a la base de datos", "data": []}
 
@@ -69,7 +70,7 @@ class ServiceData:
             return None
 
     # Obtener todas las universidades y devolver un objeto JSON clave-valor
-    def get_all_universidades(self,):
+    def get_all_universidades(self):
         con = self._strcon
         if con is None:
             return {"status": "error", "message": "Error al conectar a la base de datos", "data": []}
@@ -181,4 +182,53 @@ class ServiceData:
         except sqlite3.Error as e:
             print(f'Error en la consulta: {e}')
             return None
+
+    import sqlite3
+    import json
+
+    def get_user_subjects(self, user_id):
+        con = self._strcon
+
+        if con is None:
+            return {"status": "error", "message": "Error al conectar a la base de datos", "data": []}
+
+        query = """
+        SELECT 
+            u.universidad_id,
+            u.acronimo_universidad AS acronym,
+            u.nombre_universidad AS name,
+            u.foto AS logo,
+            json_group_array(
+                json_object(
+                    'subject_name', a.nombre,
+                    'day', a.dia,
+                    'start', a.hora_inicio,
+                    'end', a.hora_fin,
+                    'room', a.aula
+                )
+            ) AS subjects
+        FROM Universidad u
+        JOIN Asignatura a ON u.universidad_id = a.universidad_id
+        WHERE a.username = ?
+        GROUP BY u.universidad_id
+        """
+
+        cursor = con.cursor()
+        cursor.execute(query, [user_id])
+        results = cursor.fetchall()
+
+        con.close()  # Cerrar la conexión
+
+        # Convertir resultados a lista de diccionarios
+        universidades = []
+        for row in results:
+            universidades.append({
+                "university_id": row[0],
+                "acronym": row[1],
+                "name": row[2],
+                "logo": row[3],
+                "subjects": json.loads(row[4]) if row[4] else None  # Convertir JSON string a lista
+            })
+
+        return  universidades
 
