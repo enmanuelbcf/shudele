@@ -15,4 +15,8 @@ def vefify_salt(password: str, salt: bytes):
         return False
 
 def convert_time(time_str):
-    return datetime.strptime(time_str, "%I:%M %p").time()
+    try:
+        return datetime.strptime(time_str, "%I:%M %p").time()  # Convierte a formato 24h
+    except ValueError:
+        print(f"Error en la hora: {time_str}")  # Maneja errores si la hora no es válida
+        return datetime.strptime("11:59 PM", "%I:%M %p").time()

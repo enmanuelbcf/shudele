@@ -3,7 +3,7 @@ import os
 import sqlite3
 
 
-from Model.app_models import University, Usuarios
+from Model.app_models import University, Usuarios, Asignatura
 from utlis.funciones_utlis import generate_salt
 
 
@@ -243,3 +243,51 @@ ORDER BY
 
         return  universidades
 
+    def registrar_asignatura(self, asignatura: Asignatura):
+        con = self._strcon
+
+        if con is None:
+            return {"status": "error", "message": "Error al conectar a la base de datos", "data": []}
+        try:
+            cursor = con.cursor()
+
+            # Crear la tabla si no existe
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS asignatura (
+                    asignatura_id TEXT PRIMARY KEY,
+                    nombre TEXT NOT NULL,
+                    dia TEXT NOT NULL,
+                    hora_inicio TEXT NOT NULL,
+                    hora_fin TEXT NOT NULL,
+                    aula TEXT NOT NULL,
+                    universidad_id TEXT NOT NULL,
+                    username TEXT NOT NULL
+                )
+            """)
+
+            # Insertar la asignatura usando los atributos del objeto
+            cursor.execute("""
+                INSERT INTO asignatura (asignatura_id, nombre, dia, hora_inicio, hora_fin, aula, universidad_id, username)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+            asignatura.asignatura_id, asignatura.nombre, asignatura.dia, asignatura.hora_inicio, asignatura.hora_fin,
+            asignatura.aula, asignatura.universidad_id, asignatura.username))
+
+            # Guardar los cambios
+            con.commit()
+
+            # Consultar y mostrar los registros para confirmar la inserción
+            cursor.execute("""
+                SELECT asignatura_id, nombre, dia, hora_inicio, hora_fin, aula, universidad_id, username FROM asignatura
+            """)
+            registros = cursor.fetchall()
+
+            print("Registros en la tabla asignatura:")
+            for fila in registros:
+                print(fila)
+
+        except sqlite3.Error as e:
+            print("Error en la base de datos:", e)
+        finally:
+            # Cerrar la conexión
+            con.close()

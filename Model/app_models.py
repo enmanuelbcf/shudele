@@ -22,6 +22,14 @@ class Usuarios(BaseModel):
     email: EmailStr
     password: str = Field(min_length=1)
 
-    # Función para encriptar la contraseña
+class Asignatura(BaseModel):
+    asignatura_id: str
+    nombre: str = Field(max_length=100)
+    dia: str
+    hora_inicio: str
+    hora_fin: str
+    aula: str
+    universidad_id: str
+    username: str
 
     
