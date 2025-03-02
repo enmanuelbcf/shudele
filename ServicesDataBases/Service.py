@@ -193,24 +193,35 @@ class ServiceData:
             return {"status": "error", "message": "Error al conectar a la base de datos", "data": []}
 
         query = """
-        SELECT 
-            u.universidad_id,
-            u.acronimo_universidad AS acronym,
-            u.nombre_universidad AS name,
-            u.foto AS logo,
-            json_group_array(
-                json_object(
-                    'subject_name', a.nombre,
-                    'day', a.dia,
-                    'start', a.hora_inicio,
-                    'end', a.hora_fin,
-                    'room', a.aula
-                )
-            ) AS subjects
-        FROM Universidad u
-        JOIN Asignatura a ON u.universidad_id = a.universidad_id
-        WHERE a.username = ?
-        GROUP BY u.universidad_id
+      SELECT 
+    u.universidad_id,
+    u.acronimo_universidad AS acronym,
+    u.nombre_universidad AS name,
+    u.foto AS logo,
+    json_group_array(
+        json_object(
+            'subject_name', a.nombre,
+            'day', a.dia,
+            'start', a.hora_inicio,
+            'end', a.hora_fin,
+            'room', a.aula
+        )
+    ) AS subjects
+FROM Universidad u
+JOIN Asignatura a ON u.universidad_id = a.universidad_id
+WHERE a.username = 'admin'
+GROUP BY u.universidad_id
+ORDER BY 
+    CASE 
+        WHEN a.dia = 'lunes' THEN 1
+        WHEN a.dia = 'martes' THEN 2
+        WHEN a.dia = 'miércoles' THEN 3
+        WHEN a.dia = 'jueves' THEN 4
+        WHEN a.dia = 'viernes' THEN 5
+        WHEN a.dia = 'Sabado' THEN 6
+        ELSE 7
+    END,
+    a.hora_inicio;
         """
 
         cursor = con.cursor()
