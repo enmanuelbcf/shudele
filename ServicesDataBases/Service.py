@@ -220,7 +220,7 @@ ORDER BY
         WHEN a.dia = 'viernes' THEN 5
         WHEN a.dia = 'Sabado' THEN 6
         ELSE 7
-    END,
+    END ,
     a.hora_inicio desc;
         """
 

@@ -1,4 +1,5 @@
 import bcrypt
+from datetime import datetime
 
 
 def generate_salt(password: str):
@@ -12,3 +13,6 @@ def vefify_salt(password: str, salt: bytes):
         return True
     else:
         return False
+
+def convert_time(time_str):
+    return datetime.strptime(time_str, "%I:%M %p").time()

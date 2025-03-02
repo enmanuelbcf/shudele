@@ -3,6 +3,7 @@ import json
 from utlis.common_imports import APIRouter, Depends, HTTPException, JSONResponse, University, os,Annotated,status,Annotated
 from ServicesDataBases.Service import ServiceData
 from routers.auth import decode_token
+from utlis.funciones_utlis import convert_time
 
 router = APIRouter(prefix='/universidades', tags=['universidades'])
 db = ServiceData()
@@ -71,10 +72,18 @@ def crear_universidad(universidad: University, my_user: Annotated[dict, Depends(
 
 @router.get("/obtener-universidad-subject/{username}")
 def obtener_universidad_subject(username: str):
+
     try:
         db.conectar_db()
         data = db.get_user_subjects(username)
-        print(type(data))
+
+        day_order = {"Lunes": 1, "Martes": 2, "Miercoles": 3, "Jueves": 4, "Viernes": 5, "Sabado": 6, "Domingo": 7}
+
+        for university in data:
+            university["subjects"].sort(key=lambda x: (day_order.get(x["day"], 8), convert_time(x["start"])))
+
+        print(json.dumps(data, indent=4, ensure_ascii=False))
+
         if not data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No se encontraron datos")
 
