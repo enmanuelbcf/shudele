@@ -221,7 +221,7 @@ ORDER BY
         WHEN a.dia = 'Sabado' THEN 6
         ELSE 7
     END,
-    a.hora_inicio;
+    a.hora_inicio desc;
         """
 
         cursor = con.cursor()
