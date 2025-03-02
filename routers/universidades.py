@@ -1,5 +1,6 @@
 import json
 
+from Model.app_models import Asignatura
 from utlis.common_imports import APIRouter, Depends, HTTPException, JSONResponse, University, os,Annotated,status,Annotated
 from ServicesDataBases.Service import ServiceData
 from routers.auth import decode_token
@@ -12,7 +13,7 @@ db = ServiceData()
 def obtener_universidades(my_user: Annotated[dict, Depends(decode_token)]):
     try:
         db.conectar_db()
-        data = db.get_user_subjects('69f51c04-5f95-4y4d-a363-cb2d891e541w')
+        data = db.get_all_universidades()
 
         if not data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No se encontraron datos")
@@ -98,3 +99,20 @@ def obtener_universidad_subject(username: str):
         raise err
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error Interno")
+
+
+@router.post('/registrar_asignatura')
+def registrar_asignatura_end(asignatura: Asignatura, my_user: Annotated[dict, Depends(decode_token)]):
+    try:
+        db.conectar_db()
+        data = db.registrar_asignatura(asignatura=asignatura)
+
+        if  data is None:
+           raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='La asignatura ya existe')
+
+        return JSONResponse(status_code=status.HTTP_201_CREATED, content=data)
+    except HTTPException as err:
+        raise err
+
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error Interno {e}")

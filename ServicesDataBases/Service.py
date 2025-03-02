@@ -228,9 +228,8 @@ ORDER BY
         cursor.execute(query, [user_id])
         results = cursor.fetchall()
 
-        con.close()  # Cerrar la conexión
+        con.close()
 
-        # Convertir resultados a lista de diccionarios
         universidades = []
         for row in results:
             universidades.append({
@@ -251,43 +250,33 @@ ORDER BY
         try:
             cursor = con.cursor()
 
-            # Crear la tabla si no existe
             cursor.execute("""
-                CREATE TABLE IF NOT EXISTS asignatura (
-                    asignatura_id TEXT PRIMARY KEY,
-                    nombre TEXT NOT NULL,
-                    dia TEXT NOT NULL,
-                    hora_inicio TEXT NOT NULL,
-                    hora_fin TEXT NOT NULL,
-                    aula TEXT NOT NULL,
-                    universidad_id TEXT NOT NULL,
-                    username TEXT NOT NULL
-                )
-            """)
-
-            # Insertar la asignatura usando los atributos del objeto
-            cursor.execute("""
-                INSERT INTO asignatura (asignatura_id, nombre, dia, hora_inicio, hora_fin, aula, universidad_id, username)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO asignatura (nombre, dia, hora_inicio, hora_fin, aula, universidad_id, username)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                RETURNING asignatura_id;
             """, (
-            asignatura.asignatura_id, asignatura.nombre, asignatura.dia, asignatura.hora_inicio, asignatura.hora_fin,
+            asignatura.nombre, asignatura.dia, asignatura.hora_inicio, asignatura.hora_fin,
             asignatura.aula, asignatura.universidad_id, asignatura.username))
 
-            # Guardar los cambios
+            asignatura_id = cursor.fetchone()[0]
+
             con.commit()
 
-            # Consultar y mostrar los registros para confirmar la inserción
-            cursor.execute("""
-                SELECT asignatura_id, nombre, dia, hora_inicio, hora_fin, aula, universidad_id, username FROM asignatura
-            """)
-            registros = cursor.fetchall()
-
-            print("Registros en la tabla asignatura:")
-            for fila in registros:
-                print(fila)
+            data = {
+                  "asignatura": asignatura_id,
+                  "nombre": asignatura.nombre,
+                  "dia": asignatura.dia,
+                  "hora_inicio": asignatura.hora_inicio,
+                  "hora_fin": asignatura.hora_fin,
+                  "aula": asignatura.aula,
+                  "universidad_id": asignatura.universidad_id,
+                  "username": asignatura.username
+                }
+            return data
 
         except sqlite3.Error as e:
             print("Error en la base de datos:", e)
+            return None
         finally:
             # Cerrar la conexión
             con.close()
