@@ -209,7 +209,7 @@ class ServiceData:
     ) AS subjects
 FROM Universidad u
 JOIN Asignatura a ON u.universidad_id = a.universidad_id
-WHERE a.username = 'admin'
+WHERE a.username = ?
 GROUP BY u.universidad_id
 ORDER BY 
     CASE 
