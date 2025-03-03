@@ -83,7 +83,6 @@ def obtener_universidad_subject(username: str):
         for university in data:
             university["subjects"].sort(key=lambda x: (day_order.get(x["day"], 8), convert_time(x["start"])))
 
-        print(json.dumps(data, indent=4, ensure_ascii=False))
 
         if not data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No se encontraron datos")
