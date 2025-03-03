@@ -11,7 +11,7 @@ app = FastAPI()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Llamamos a send_push al iniciar
-    asyncio.create_task(send_push())
+    # asyncio.create_task(send_push())
     yield
     # Aquí puedes manejar la limpieza cuando la aplicación termine
     print("Cerrando la aplicación...")
