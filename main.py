@@ -1,7 +1,7 @@
 import asyncio
 import uvicorn
 from fastapi import FastAPI
-from routers import usuario, universidades, auth, push_notification
+from routers import usuario, universidades, auth
 from routers.push_notification import send_push
 from contextlib import asynccontextmanager
 
