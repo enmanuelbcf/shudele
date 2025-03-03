@@ -135,7 +135,7 @@ async def send_push():
             print(f"📢 Notificación enviada: {lista_datos['asignatura']} en {lista_datos['nombre_universidad']}")
             lista_datos = None
     else:
-        delay = 1800
+        delay = 7200
         primer_ejecucion = False
 
     primer_ejecucion = True

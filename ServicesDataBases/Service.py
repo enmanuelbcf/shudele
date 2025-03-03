@@ -9,7 +9,7 @@ from utlis.funciones_utlis import generate_salt
 
 class ServiceData:
     def __init__(self):
-        self._con = os.path.abspath('../DataBases/db')
+        self._con = os.path.abspath('DataBases/db')
         self._strcon = ''
 
     @property
