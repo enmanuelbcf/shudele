@@ -46,14 +46,17 @@ async def enviar_notificacion(asignatura, universidad):
 
 
 
-def existe_push():
-    # Obtener la fecha y hora actual
-    global proxima_hora
-    zona_horaria = pytz.timezone('America/Santo_Domingo')  # Zona horaria de RD, que es UTC -4
+from datetime import datetime, time, timedelta
+import pytz
 
-    # Obtener la hora actual en la zona horaria de UTC -4
-    ahora = datetime.now(zona_horaria)
-    hora_actual = ahora.time()  # Solo extraer la hora actual
+def existe_push():
+    global proxima_hora
+
+    # Obtener la fecha y hora actual en UTC
+    ahora_utc = datetime.now(pytz.utc)
+    hora_actual_utc = ahora_utc.time()  # Extraer solo la hora actual en UTC
+
+    print(ahora_utc)
 
     # Diccionario de días en español
     dias_espanol = {
@@ -67,7 +70,7 @@ def existe_push():
     }
 
     # Obtener el nombre del día traducido
-    dia_semana_es = dias_espanol[ahora.strftime("%A")]
+    dia_semana_es = dias_espanol[ahora_utc.strftime("%A")]
 
     print(f"Hoy es {dia_semana_es}")
 
@@ -76,49 +79,47 @@ def existe_push():
     db.conectar_db()
     data = db.obtener_asignaturas_por_dia(dia_semana_es)  # Usa el día en español
 
-    # Verificar si hay datos antes de continuar
     if not data:
         print("📌 No hay asignaturas programadas para hoy.")
         proxima_hora = None
-    else:
+        return None
 
-        # Filtrar solo las asignaturas con horas futuras
-        asignaturas_futuras = []
+    # Filtrar solo las asignaturas con horas futuras
+    asignaturas_futuras = []
 
-        for item in data:
-            try:
-                # Extraer solo la hora de la asignatura
-                hora_asignatura = datetime.strptime(item['hora'], "%I:%M %p").time()
+    for item in data:
+        try:
+            # Convertir la hora almacenada en la BD a formato UTC
+            hora_asignatura_utc = datetime.strptime(item['hora'], "%I:%M %p").time()
 
-                # Comparar solo la hora
-                if hora_asignatura > hora_actual:
-                    item['hora_time'] = hora_asignatura
-                    asignaturas_futuras.append(item)
-            except ValueError as e:
-                print(f"⚠ Error en la conversión de hora ({item['hora']}): {e}")
+            # Comparar solo la hora
+            if hora_asignatura_utc > hora_actual_utc:
+                item['hora_time'] = hora_asignatura_utc
+                asignaturas_futuras.append(item)
+        except ValueError as e:
+            print(f"⚠ Error en la conversión de hora ({item['hora']}): {e}")
 
-        # Si hay asignaturas futuras, seleccionar la más próxima a la hora actual
-        if asignaturas_futuras:
-            proxima_hora = min(
-                asignaturas_futuras,
-                key=lambda x: abs(
-                    # Asegurarse de que ambos datetime sean "aware"
-                    (datetime.combine(ahora.date(), x['hora_time']).astimezone(zona_horaria) - ahora).total_seconds()
-                )
+    # Si hay asignaturas futuras, seleccionar la más próxima a la hora actual
+    if asignaturas_futuras:
+        proxima_hora = min(
+            asignaturas_futuras,
+            key=lambda x: abs(
+                (datetime.combine(ahora_utc.date(), x['hora_time']).replace(tzinfo=pytz.utc) - ahora_utc).total_seconds()
             )
+        )
 
-            # Calcular los segundos faltantes
-            diferencia = datetime.combine(ahora.date(), proxima_hora['hora_time']).astimezone(zona_horaria) - ahora
-            segundos_faltantes = diferencia.total_seconds()
+        # Calcular los segundos faltantes
+        diferencia = datetime.combine(ahora_utc.date(), proxima_hora['hora_time']).replace(tzinfo=pytz.utc) - ahora_utc
+        segundos_faltantes = diferencia.total_seconds()
 
-            return {
-                'segundos_faltantes': segundos_faltantes,
-                'asignatura': proxima_hora['asignatura'],
-                'nombre_universidad': proxima_hora['nombre_universidad']
-            }
+        return {
+            'segundos_faltantes': segundos_faltantes,
+            'asignatura': proxima_hora['asignatura'],
+            'nombre_universidad': proxima_hora['nombre_universidad']
+        }
 
-        else:
-            return None
+    return None
+
 
 def send_push():
     global lista_datos
