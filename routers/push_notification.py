@@ -3,6 +3,8 @@ import httpx
 import asyncio
 import threading
 from datetime import datetime
+from datetime import datetime, timedelta
+import pytz
 from ServicesDataBases.Service import ServiceData
 from datetime import datetime
 from contextlib import asynccontextmanager
@@ -45,17 +47,20 @@ async def enviar_notificacion(asignatura, universidad):
 def existe_push():
     # Obtener la fecha y hora actual
     global proxima_hora
-    ahora = datetime.now()
+    zona_horaria = pytz.timezone('America/Santo_Domingo')  # Zona horaria de RD, que es UTC -4
+
+    # Obtener la hora actual en la zona horaria de UTC -4
+    ahora = datetime.now(zona_horaria)
     hora_actual = ahora.time()  # Solo extraer la hora actual
 
     # Diccionario de días en español
     dias_espanol = {
         "Monday": "Lunes",
         "Tuesday": "Martes",
-        "Wednesday": "Miercoles",
+        "Wednesday": "Miércoles",
         "Thursday": "Jueves",
         "Friday": "Viernes",
-        "Saturday": "Sabado",
+        "Saturday": "Sábado",
         "Sunday": "Domingo"
     }
 
