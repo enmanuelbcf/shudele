@@ -57,10 +57,10 @@ def existe_push():
     dias_espanol = {
         "Monday": "Lunes",
         "Tuesday": "Martes",
-        "Wednesday": "Miércoles",
+        "Wednesday": "Miercoles",
         "Thursday": "Jueves",
         "Friday": "Viernes",
-        "Saturday": "Sábado",
+        "Saturday": "Sabado",
         "Sunday": "Domingo"
     }
 
@@ -100,24 +100,23 @@ def existe_push():
             proxima_hora = min(
                 asignaturas_futuras,
                 key=lambda x: abs(
-                    (datetime.combine(ahora.date(), x['hora_time']) - ahora).total_seconds()
+                    # Asegurarse de que ambos datetime sean "aware"
+                    (datetime.combine(ahora.date(), x['hora_time']).astimezone(zona_horaria) - ahora).total_seconds()
                 )
             )
 
             # Calcular los segundos faltantes
-            diferencia = datetime.combine(ahora.date(), proxima_hora['hora_time']) - ahora
+            diferencia = datetime.combine(ahora.date(), proxima_hora['hora_time']).astimezone(zona_horaria) - ahora
             segundos_faltantes = diferencia.total_seconds()
-
 
             return {
                 'segundos_faltantes': segundos_faltantes,
                 'asignatura': proxima_hora['asignatura'],
-                'nombre_universidad':proxima_hora['nombre_universidad']
+                'nombre_universidad': proxima_hora['nombre_universidad']
             }
 
         else:
             return None
-
 
 async def send_push():
     global lista_datos
