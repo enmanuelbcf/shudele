@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 
 app = FastAPI()
 
-send_push()
+# send_push()
 app.include_router(auth.router)
 app.include_router(usuario.router)
 app.include_router(universidades.router)
