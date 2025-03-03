@@ -1,3 +1,5 @@
+from threading import Thread
+
 from fastapi import FastAPI, APIRouter
 import httpx
 import asyncio
@@ -118,7 +120,7 @@ def existe_push():
         else:
             return None
 
-async def send_push():
+def send_push():
     global lista_datos
     global primer_ejecucion
 
@@ -135,7 +137,7 @@ async def send_push():
             print(f'DENTRO DEL SEND - {lista_datos}')
 
             # Ejecutar la tarea asíncrona
-            await enviar_notificacion(lista_datos['asignatura'], lista_datos['nombre_universidad'])
+            asyncio.run(enviar_notificacion(lista_datos['asignatura'], lista_datos['nombre_universidad']))
             print(f"📢 Notificación enviada: {lista_datos['asignatura']} en {lista_datos['nombre_universidad']}")
             lista_datos = None
     else:
@@ -145,9 +147,5 @@ async def send_push():
     primer_ejecucion = True
     print(primer_ejecucion)
     print(f"⏳ Siguiente ejecución en {delay} segundos")
+    threading.Timer(delay, send_push).start()
 
-    # Usamos `asyncio.sleep` para hacer la espera sin bloquear el bucle de eventos
-    await asyncio.sleep(delay)  # Esperar el tiempo en vez de usar un Timer
-    await send_push()  # Ejecutar nuevamente la función
-
-# Iniciar el bucle de eventos principal
