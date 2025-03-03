@@ -1,6 +1,6 @@
 import uuid
 from enum import Enum
-from typing import Optional, Union
+from typing import Optional, Union, List
 from pydantic import BaseModel, Field,EmailStr
 from passlib.context import CryptContext
 
@@ -40,3 +40,8 @@ class AsignaturaDTO(BaseModel):
     aula: str
     universidad_id: int
     username: str
+
+class Notificacion(BaseModel):
+    horas: List[str]
+    asignatura: str
+    universidad: str

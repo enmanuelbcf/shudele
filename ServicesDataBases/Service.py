@@ -9,7 +9,7 @@ from utlis.funciones_utlis import generate_salt
 
 class ServiceData:
     def __init__(self):
-        self._con = os.path.abspath('DataBases/db')
+        self._con = os.path.abspath('../DataBases/db')
         self._strcon = ''
 
     @property
@@ -280,3 +280,36 @@ ORDER BY
         finally:
             # Cerrar la conexión
             con.close()
+
+    def obtener_asignaturas_por_dia(self, dia):
+        con = self._strcon
+
+        if con is None:
+            return {"status": "error", "message": "Error al conectar a la base de datos", "data": []}
+        try:
+            cursor = con.cursor()
+            consulta = """
+            SELECT A.hora_inicio, U.acronimo_universidad  AS nombre_universidad, A.nombre AS asignatura
+            FROM Asignatura A
+            JOIN Universidad U ON A.universidad_id = U.universidad_id
+            WHERE A.username = 'admin' AND A.dia = ?
+            ORDER BY A.hora_inicio
+            """
+
+            cursor.execute(consulta, [dia])
+            asignaturas = cursor.fetchall()
+
+
+            # Convertir los datos a la estructura deseada
+            data = [
+                {'hora': hora, 'nombre_universidad': nombre_universidad, 'asignatura': asignatura}
+                for hora, nombre_universidad, asignatura in asignaturas
+            ]
+
+            return data
+
+        except sqlite3.Error as e:
+            print(f"Error en la base de datos:", {e})
+            return None
+
+
