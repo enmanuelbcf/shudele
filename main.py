@@ -5,12 +5,11 @@ import pytz
 import uvicorn
 from fastapi import FastAPI
 from routers import usuario, universidades, auth
-from routers.push_notification import send_push
-from contextlib import asynccontextmanager
+from routers.push_notification import schedule
 
 app = FastAPI()
 
-send_push()
+schedule()
 app.include_router(auth.router)
 app.include_router(usuario.router)
 app.include_router(universidades.router)

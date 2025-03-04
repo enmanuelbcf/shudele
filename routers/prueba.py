@@ -7,11 +7,11 @@ from datetime import datetime, timedelta
 from ServicesDataBases.Service import ServiceData
 from utlis.funciones_utlis import convert_utc_to_dominican
 
+ONESIGNAL_APP_ID = "ebb2b31d-1769-4f6e-8572-7b238fb961a6"
+ONESIGNAL_API_KEY = "os_v2_app_5ozlghixnfhw5blspmry7olbuzq3n3rrcsiuznmeh6g77fwsc3x67xsj7lqtku7znyla5ykxfu5tl7m2kji6trihgyhsnqytxnmfoea"
+
 
 def schedule_notifications(notifications, dia_actual):
-    ONESIGNAL_APP_ID = "ebb2b31d-1769-4f6e-8572-7b238fb961a6"
-    ONESIGNAL_API_KEY = "os_v2_app_5ozlghixnfhw5blspmry7olbuzq3n3rrcsiuznmeh6g77fwsc3x67xsj7lqtku7znyla5ykxfu5tl7m2kji6trihgyhsnqytxnmfoea"
-
     if len(notifications)  < 1:
         print(f'dia - {dia_actual} - no hay notificacion')
         return
@@ -35,16 +35,15 @@ def schedule_notifications(notifications, dia_actual):
         }
         response = requests.post(url, headers=headers, data=json.dumps(payload))
         print(f"Notificacion - {fecha_completa} -{notification['asignatura']} en {notification['nombre_universidad']}")
+        i = ServiceData()
+        i.conectar_db()
 
-
-        if response.status_code == 200:
-            i = ServiceData()
-            i.conectar_db()
-            i.insert_historico_servicio(
-                nombre_servicio='PUSH_NOTIFICATION',
-                data=f'fecha-ejecucuion- {convert_utc_to_dominican(fecha_completa)}- '
-                     f'asignatura {notification['asignatura']}- universidad {notification['nombre_universidad']}'
-            )
+        i.insert_historico_servicio(
+            nombre_servicio='PUSH_NOTIFICATION',
+            data=f'fecha-ejecucuion- {convert_utc_to_dominican(fecha_completa)}- '
+                 f'asignatura {notification['asignatura']}- universidad {notification['nombre_universidad']}'
+        )
+        print(response.json())
 
 
 def schedule():
@@ -93,3 +92,9 @@ def schedule():
 
     )
     threading.Timer(delay, schedule).start()
+
+
+# Inicia el scheduler
+schedule()
+
+# Nota: El script se mantendrá ejecutándose en un bucle gracias al threading.Timer.

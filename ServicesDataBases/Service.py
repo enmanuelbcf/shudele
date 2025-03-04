@@ -312,4 +312,37 @@ ORDER BY
             print(f"Error en la base de datos:", {e})
             return None
 
+    def insert_historico_servicio(self,nombre_servicio, data):
+        """
+        Inserta un registro en la tabla historico_servicios.
+
+        Parámetros:
+          - nombre_servicio: str, nombre del servicio.
+          - data: str, cadena de texto que contiene el JSON.
+          - db_config: dict, configuración de conexión con claves:
+              host, user, password, database, port (opcional).
+
+        Retorna:
+          - ID del registro insertado o None si ocurre un error.
+        """
+        con = self._strcon
+
+        if con is None:
+            return {"status": "error", "message": "Error al conectar a la base de datos", "data": []}
+        try:
+            # Conectar a la base de datos usando la configuración proporcionad
+                cursor = con.cursor()
+                insert_query = """
+                    INSERT INTO historico_servicios (nombre_servicio, data)
+                    VALUES (?, ?)
+                """
+                values = [nombre_servicio, data]
+                cursor.execute(insert_query, values)
+                con.commit()
+                return True
+        except  sqlite3.Error as e:
+            print("Error al insertar datos:", e)
+            return None
+
+
 
