@@ -29,6 +29,7 @@ def schedule_notifications(notifications, dia_actual):
         payload = {
             "app_id": ONESIGNAL_APP_ID,
             "included_segments": ["All"],
+            ''
             "contents": {
                 "en": f"Tienes clase de {notification['asignatura']} en {notification['nombre_universidad']}.!A CORRER LOS LAKERS!!!"},
             "send_after": fecha_completa
