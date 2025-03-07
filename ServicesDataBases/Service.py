@@ -344,5 +344,25 @@ ORDER BY
             print("Error al insertar datos:", e)
             return None
 
+    def get_historico(self):
+        con = self._strcon
+        if con is None:
+            return {"status": "error", "message": "Error al conectar a la base de datos", "data": []}
+
+        try:
+            cursor = con.cursor()
+            cursor.execute("SELECT * FROM historico_servicios")
+            rows = cursor.fetchall()
+            con.close()  # Cerrar conexión
+
+            if rows:
+                data = [dict(row) for row in rows]  # Convertir cada fila en un diccionario clave-valor
+                return data
+            else:
+                return None
+
+        except sqlite3.Error as e:
+            print(f'Error en la consulta: {e}')
+            return None
 
 
