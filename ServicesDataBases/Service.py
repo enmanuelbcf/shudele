@@ -351,7 +351,7 @@ ORDER BY
 
         try:
             cursor = con.cursor()
-            cursor.execute("SELECT * FROM historico_servicios order by fecha decs")
+            cursor.execute("SELECT * FROM historico_servicios order by fecha desc")
             rows = cursor.fetchall()
             con.close()  # Cerrar conexión
 
