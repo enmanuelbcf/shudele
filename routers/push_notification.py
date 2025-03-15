@@ -84,11 +84,7 @@ def schedule():
     dia_semana_es = dias_espanol[ahora_utc.strftime("%A")]
 
     print(f"Hoy es {dia_semana_es}")
-    data = db.obtener_asignaturas_por_dia('Lunes')
-
-
-    data[0]['hora'] = data[0]['hora'] + timedelta(days=3)
-    data[1]['hora'] = data[1]['hora'] + timedelta(days=3)
+    data = db.obtener_asignaturas_por_dia(dia_semana_es)
 
     # print(data)
     data_fecha_futura = []
