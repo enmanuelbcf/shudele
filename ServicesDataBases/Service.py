@@ -1,7 +1,9 @@
 import json
 import os
 import sqlite3
+from datetime import datetime
 
+import pytz
 
 from Model.app_models import University, Usuarios, Asignatura
 from utlis.funciones_utlis import generate_salt
@@ -283,13 +285,14 @@ ORDER BY
 
     def obtener_asignaturas_por_dia(self, dia):
         con = self._strcon
+        dia_actual_utc = datetime.now(pytz.utc)
 
         if con is None:
             return {"status": "error", "message": "Error al conectar a la base de datos", "data": []}
         try:
             cursor = con.cursor()
             consulta = """
-            SELECT A.hora_inicio, U.acronimo_universidad  AS nombre_universidad, A.nombre AS asignatura
+            SELECT A.hora_inicio, hora_fin, U.acronimo_universidad  AS nombre_universidad, A.nombre AS asignatura
             FROM Asignatura A
             JOIN Universidad U ON A.universidad_id = U.universidad_id
             WHERE A.username = 'admin' AND A.dia = ?
@@ -302,8 +305,16 @@ ORDER BY
 
             # Convertir los datos a la estructura deseada
             data = [
-                {'hora': hora, 'nombre_universidad': nombre_universidad, 'asignatura': asignatura}
-                for hora, nombre_universidad, asignatura in asignaturas
+                {
+                    'hora': datetime.combine(dia_actual_utc.date(), datetime.strptime(hora, "%H:%M").time()).replace(
+                        tzinfo=pytz.utc),
+                    'hora_fin': datetime.combine(dia_actual_utc.date(),
+                                                 datetime.strptime(hora_fin, "%H:%M").time()).replace(
+                        tzinfo=pytz.utc),
+                    'nombre_universidad': nombre_universidad,
+                    'asignatura': asignatura
+                }
+                for hora, hora_fin, nombre_universidad, asignatura in asignaturas
             ]
 
             return data
@@ -366,3 +377,23 @@ ORDER BY
             return None
 
 
+    def obtener_parametro_por_id(self, parametro):
+        con = self._strcon
+        if con is None:
+            return {"status": "error", "message": "Error al conectar a la base de datos", "data": []}
+
+        try:
+            cursor = con.cursor()
+            cursor.execute("select * FROM Parametros p WHERE p.parametro_id = ?", [parametro])
+            rows = cursor.fetchall()
+            con.close()  # Cerrar conexión
+
+            if rows:
+                data = [dict(row) for row in rows]  # Convertir cada fila en un diccionario clave-valor
+                return data
+            else:
+                return None
+
+        except sqlite3.Error as e:
+            print(f'Error en la consulta: {e}')
+            return None

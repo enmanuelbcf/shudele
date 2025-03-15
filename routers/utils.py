@@ -6,10 +6,6 @@ from ServicesDataBases.Service import ServiceData
 
 router = APIRouter(prefix='/utils', tags=['utils'])
 
-
-
-
-
 @router.get('/obtener-historico')
 def historico():
     try:
