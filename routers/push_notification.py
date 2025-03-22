@@ -1,4 +1,7 @@
 import threading
+from time import daylight
+
+import schedule
 import pytz
 import requests
 import json
@@ -7,11 +10,12 @@ from datetime import datetime, timedelta
 from ServicesDataBases.Service import ServiceData
 from utlis.funciones_utlis import convert_utc_to_dominican
 
-parametro = ServiceData()
-parametro.conectar_db()
+
 
 
 def schedule_notifications(notifications, dia_actual):
+    parametro = ServiceData()
+    parametro.conectar_db()
     ONESIGNAL_APP_ID = "ebb2b31d-1769-4f6e-8572-7b238fb961a6"
     ONESIGNAL_API_KEY = "os_v2_app_5ozlghixnfhw5blspmry7olbuzq3n3rrcsiuznmeh6g77fwsc3x67xsj7lqtku7znyla5ykxfu5tl7m2kji6trihgyhsnqytxnmfoea"
 
@@ -28,7 +32,7 @@ def schedule_notifications(notifications, dia_actual):
     }
     minutos_resta =  parametro.obtener_parametro_por_id('MINUTOS-PUSH-NOTIFICATION')
 
-    min = minutos_resta[0]['value']
+    min = minutos_resta['value']
 
     for notification in notifications :
         hora = notification['hora']
@@ -55,9 +59,10 @@ def schedule_notifications(notifications, dia_actual):
 
 
         if response.status_code == 200:
-            i = ServiceData()
-            i.conectar_db()
-            i.insert_historico_servicio(
+            hist = ServiceData()
+            hist.conectar_db()
+
+            parametro.insert_historico_servicio(
                 nombre_servicio='PUSH_NOTIFICATION',
                 data=f'fecha-ejecucuion- {convert_utc_to_dominican(datetime.now(pytz.utc))}'
                      f'asignatura {notification['asignatura']}- universidad {notification['nombre_universidad']}'
@@ -75,9 +80,10 @@ def schedule():
         "Sunday": "Domingo"
     }
 
-    # Conectar a la base de datos y obtener datos (se puede ajustar según la implementación real)
-    db = ServiceData()
+    db =  ServiceData()
     db.conectar_db()
+
+    # Conectar a la base de datos y obtener datos (se puede ajustar según la implementación real)
 
     ahora_utc = datetime.now(pytz.utc)
 
@@ -102,11 +108,11 @@ def schedule():
         target += timedelta(days=1)
     delay = (target - now).total_seconds()
 
-    db = ServiceData()
-    db.conectar_db()
     db.insert_historico_servicio(
         nombre_servicio='FECHA_EJECUCION_PUSH',
         data=f"Próxima ejecución programada en {delay} segundos, a las {target} UTC"
 
     )
+    print(f'DELAY - {delay}')
     threading.Timer(delay, schedule).start()
+

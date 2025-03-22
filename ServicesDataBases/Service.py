@@ -35,6 +35,7 @@ class ServiceData:
             con = sqlite3.connect(self._con)
             con.row_factory = sqlite3.Row  # Permite obtener los resultados como diccionarios
             self._strcon = con
+            return con
         except sqlite3.Error as e:
             print(f'Error al conectar: {e}')
             return None
@@ -336,7 +337,7 @@ ORDER BY
         Retorna:
           - ID del registro insertado o None si ocurre un error.
         """
-        con = self._strcon
+        con = self.conectar_db()
 
         if con is None:
             return {"status": "error", "message": "Error al conectar a la base de datos", "data": []}
@@ -390,7 +391,8 @@ ORDER BY
 
             if rows:
                 data = [dict(row) for row in rows]  # Convertir cada fila en un diccionario clave-valor
-                return data
+                print(f'DESDE OBTENER PARAM - {data}')
+                return data[0]
             else:
                 return None
 
