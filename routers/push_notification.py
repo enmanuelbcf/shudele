@@ -20,7 +20,7 @@ def schedule_notifications(notifications, dia_actual):
     ONESIGNAL_API_KEY = "os_v2_app_5ozlghixnfhw5blspmry7olbuzq3n3rrcsiuznmeh6g77fwsc3x67xsj7lqtku7znyla5ykxfu5tl7m2kji6trihgyhsnqytxnmfoea"
 
     if len(notifications)  < 1:
-        print(f'dia - {dia_actual} - no hay notificacion')
+        print(f'dia - {dia_actual} - no hay notificacions')
         return
 
     url = "https://onesignal.com/api/v1/notifications"
