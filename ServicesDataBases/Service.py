@@ -203,7 +203,7 @@ class ServiceData:
     u.foto AS logo,
     json_group_array(
         json_object(
-            'subject_name', a.nombre,
+            'subjectName', a.nombre,
             'day', a.dia,
             'start', a.hora_inicio,
             'end', a.hora_fin,
