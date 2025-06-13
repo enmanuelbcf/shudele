@@ -71,12 +71,13 @@ def crear_universidad(universidad: University, my_user: Annotated[dict, Depends(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error Interno")
 
 
-@router.get("/obtener-universidad-subject/{username}")
-def obtener_universidad_subject(username: str):
+@router.get("/obtener-universidad-subject")
+def obtener_universidad_subject(my_user: Annotated[dict, Depends(decode_token)]):
 
     try:
         db.conectar_db()
-        data = db.get_user_subjects(username)
+        print(my_user)
+        data = db.get_user_subjects(my_user[0]['username'])
 
         day_order = {"Lunes": 1, "Martes": 2, "Miercoles": 3, "Jueves": 4, "Viernes": 5, "Sabado": 6, "Domingo": 7}
 

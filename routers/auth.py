@@ -92,6 +92,7 @@ def decode_token(token: Annotated[str, Depends(oauth2_schema)])-> dict:
         data = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
 
         db.conectar_db()
+        print(data['username'])
         user = db.get_one_usuario(data['username'])
         return user
     except ExpiredSignatureError as e:
