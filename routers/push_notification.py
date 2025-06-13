@@ -51,7 +51,9 @@ def schedule_notifications(notifications, dia_actual):
                       f" {notification['nombre_universidad']} [{convert_utc_to_dominican(notification['hora'])[11:]}" 
                       f" - {convert_utc_to_dominican(notification['hora_fin'])[11:]}]"
                       f".!A CORRER LOS LAKERS!!!"},
-            "send_after": fecha_completa
+            # "send_after": fecha_completa
+            "android_vibrate": True,
+            "android_vibration_pattern": [100, 200, 100, 300]
         }
         response = requests.post(url, headers=headers, data=json.dumps(payload))
         print(f"Notificacion - {convert_utc_to_dominican(notification['hora'])[11:]}"
