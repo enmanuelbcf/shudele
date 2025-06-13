@@ -1,3 +1,7 @@
+import secrets
+
+from jose.constants import ALGORITHMS
+
 from utlis.common_imports import (
     APIRouter, Depends, HTTPException, OAuth2PasswordRequestForm, OAuth2PasswordBearer, jwt, ExpiredSignatureError, JWTClaimsError, JWTError, os, Annotated, status)
 from ServicesDataBases.Service import ServiceData
@@ -15,7 +19,11 @@ if es_prod:
 else:
     secret_value = 'dev_secret'
 
-
+SECRET_KEY = "secret_access"
+REFRESH_SECRET_KEY = "secret_refresh"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 15
+REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 @router.post('/obtener-token')
 def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
@@ -28,30 +36,61 @@ def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
         psd = vefify_salt(form_data.password, user[0].get('password'))
         if not psd:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Contraseña Incorrecta')
-        token = encode_token({'username': user[0]['username'], 'email': user[0]['email']})
-        return {'access_token': token,
-            'exp': 3600
-            }
+
+        generar_token = {'username': user[0]['username'], 'email': user[0]['email']}
+
+        access_token = crear_token(
+            generar_token,
+            expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+            secret = SECRET_KEY
+        )
+
+        refersh_token = crear_token(
+            generar_token,
+            expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS),
+            secret=REFRESH_SECRET_KEY
+        )
+
+        return {'data': {'access_token':access_token, 'expire_acces_token': ACCESS_TOKEN_EXPIRE_MINUTES, 'refersh_token': refersh_token,'expire_refersh_token':REFRESH_TOKEN_EXPIRE_DAYS}}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error Interno {e}")
 
-def encode_token(payload: dict) -> str:
-    expiration = datetime.utcnow() + timedelta(seconds=3600)
-    payload.update({"exp": expiration})
-    token = jwt.encode(payload, secret_value, algorithm='HS256')
-    return token
 
-def encode_refres_token(payload: dict) -> str:
-    expiration = datetime.utcnow() + timedelta(days=1)
-    payload.update({"exp": expiration})
-    token = jwt.encode(payload, secret_value, algorithm='HS256')
-    return token
+
+@router.post('/refresh')
+def refresh_token(refresh_token):
+    try:
+        payload = jwt.decode(refresh_token,REFRESH_SECRET_KEY, algorithms=[ALGORITHM])
+        user = payload.get('username')
+
+        if user is None:
+            raise HTTPException(status_code=401, detail="Token inválido")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Token inválido")
+
+    generar_token = payload
+
+    new_access_token = crear_token(
+        generar_token,
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+        secret=SECRET_KEY
+    )
+    return {"access_token": new_access_token, "token_type": "bearer"}
+
+
+def crear_token(payload: dict, expires_delta: timedelta, secret) -> str:
+    to_encode = payload.copy()
+    expire = datetime.utcnow() + expires_delta
+    to_encode.update({'exp': expire})
+    return jwt.encode(to_encode,secret, algorithm=ALGORITHM)
+
+
 
 
 def decode_token(token: Annotated[str, Depends(oauth2_schema)])-> dict:
     try:
-        data = jwt.decode(token, secret_value, algorithms=['HS256'])
-        # user = .get(data['username'])
+        data = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+
         db.conectar_db()
         user = db.get_one_usuario(data['username'])
         return user
