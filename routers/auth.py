@@ -1,6 +1,7 @@
 import secrets
 
 from jose.constants import ALGORITHMS
+from starlette.responses import JSONResponse
 
 from utlis.common_imports import (
     APIRouter, Depends, HTTPException, OAuth2PasswordRequestForm, OAuth2PasswordBearer, jwt, ExpiredSignatureError, JWTClaimsError, JWTError, os, Annotated, status)
@@ -22,7 +23,7 @@ else:
 SECRET_KEY = "secret_access"
 REFRESH_SECRET_KEY = "secret_refresh"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 2
+ACCESS_TOKEN_EXPIRE_MINUTES = 1
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 @router.post('/obtener-token')
@@ -110,3 +111,18 @@ def decode_token(token: Annotated[str, Depends(oauth2_schema)])-> dict:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Token Invalido'
         )
+@router.get("/verificar-token")
+def verificar_token(my_user: Annotated[dict, Depends(decode_token)]):
+    try:
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={"mensaje": "Token válido", "usuario": my_user[0]['username']}
+        )
+    except HTTPException as err:
+        if err.status_code == status.HTTP_401_UNAUTHORIZED:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token inválido o expirado",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        raise err
