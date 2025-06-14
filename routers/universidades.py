@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 from Model.app_models import Asignatura
@@ -72,23 +73,37 @@ def crear_universidad(universidad: University, my_user: Annotated[dict, Depends(
 
 
 @router.get("/obtener-universidad-subject")
-def obtener_universidad_subject(my_user: Annotated[dict, Depends(decode_token)]):
-
+async def obtener_universidad_subject(my_user: Annotated[dict, Depends(decode_token)]):
     try:
-        db.conectar_db()
-        print(my_user)
-        data = db.get_user_subjects(my_user[0]['username'])
+        async def tarea_con_timeout():
+            db.conectar_db()
+            print(my_user)
+            data = db.get_user_subjects(my_user[0]['username'])
 
-        day_order = {"Lunes": 1, "Martes": 2, "Miercoles": 3, "Jueves": 4, "Viernes": 5, "Sabado": 6, "Domingo": 7}
+            day_order = {"Lunes": 1, "Martes": 2, "Miercoles": 3,
+                         "Jueves": 4, "Viernes": 5, "Sabado": 6, "Domingo": 7}
 
-        for university in data:
-            university["subjects"].sort(key=lambda x: (day_order.get(x["day"], 8), convert_time(x["start"])))
+            for university in data:
+                university["subjects"].sort(
+                    key=lambda x: (day_order.get(x["day"], 8), convert_time(x["start"]))
+                )
 
+            if not data:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="No se encontraron datos"
+                )
 
-        if not data:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No se encontraron datos")
+            return JSONResponse(status_code=status.HTTP_200_OK, content=data)
 
-        return JSONResponse(status_code=status.HTTP_200_OK, content=data)
+        return await asyncio.wait_for(tarea_con_timeout(), timeout=10.0)
+
+    except asyncio.TimeoutError:
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="El servidor tardó demasiado en responder"
+        )
+
     except HTTPException as err:
         if err.status_code == status.HTTP_401_UNAUTHORIZED:
             raise HTTPException(
@@ -97,8 +112,13 @@ def obtener_universidad_subject(my_user: Annotated[dict, Depends(decode_token)])
                 headers={"WWW-Authenticate": "Bearer"},
             )
         raise err
+
     except Exception:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error Interno")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error Interno"
+        )
+
 
 
 @router.post('/registrar_asignatura')
