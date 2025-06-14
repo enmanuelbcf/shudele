@@ -22,7 +22,7 @@ else:
 SECRET_KEY = "secret_access"
 REFRESH_SECRET_KEY = "secret_refresh"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 15
+ACCESS_TOKEN_EXPIRE_MINUTES = 2
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 @router.post('/obtener-token')
