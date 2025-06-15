@@ -9,12 +9,17 @@ def generate_salt(password: str):
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(pwd, salt)
 
-def vefify_salt(password: str, salt: bytes):
+
+def vefify_salt(password: str, hashed_password_from_db) -> bool:
     psd = password.encode('utf-8')
-    if bcrypt.checkpw(psd, salt):
-        return True
+
+    # Asegurarse de que el hash esté en bytes, no en memoryview
+    if isinstance(hashed_password_from_db, memoryview):
+        hashed_bytes = bytes(hashed_password_from_db)
     else:
-        return False
+        hashed_bytes = hashed_password_from_db
+
+    return bcrypt.checkpw(psd, hashed_bytes)
 
 def convert_time(time_str):
     try:

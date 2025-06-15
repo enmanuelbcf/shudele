@@ -1,3 +1,4 @@
+from Model.app_models import UsuariosCreate
 from utlis.common_imports import APIRouter, Depends, HTTPException, JSONResponse, Usuarios,os,status,Annotated
 from ServicesDataBases.Service import ServiceData
 from routers.auth import decode_token
@@ -7,7 +8,7 @@ db = ServiceData()
 router = APIRouter(prefix='/usuarios', tags=['usuarios'])
 
 @router.post('/crear')
-def crear_usuario(usuario: Usuarios, my_user: Annotated[dict, Depends(decode_token)]):
+def crear_usuario(usuario: UsuariosCreate):
     try:
         db.conectar_db()
         data = db.create_usuario(usuario=usuario)
@@ -19,7 +20,8 @@ def crear_usuario(usuario: Usuarios, my_user: Annotated[dict, Depends(decode_tok
     except HTTPException as err:
         raise err
 
-    except Exception:
+    except Exception as e:
+        print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error Interno")
 
 @router.get("/obtener-usuarios")

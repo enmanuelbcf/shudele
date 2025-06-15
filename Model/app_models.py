@@ -22,6 +22,11 @@ class Usuarios(BaseModel):
     email: EmailStr
     password: str = Field(min_length=1)
 
+class UsuariosCreate(BaseModel):
+    username: str = Field(max_length=20)
+    email: EmailStr
+    password: str = Field(min_length=1)
+
 class Asignatura(BaseModel):
     nombre: str = Field(max_length=100)
     dia: str
