@@ -17,7 +17,7 @@ def schedule_notifications(notifications, dia_actual):
     parametro = ServiceData()
     parametro.conectar_db()
     ONESIGNAL_APP_ID = "ebb2b31d-1769-4f6e-8572-7b238fb961a6"
-    ONESIGNAL_API_KEY = "os_v2_app_5ozlghixnfhw5blspmry7olbuzq3n3rrcsiuznmeh6g77fwsc3x67xsj7lqtku7znyla5ykxfu5tl7m2kji6trihgyhsnqytxnmfoea"
+    ONESIGNAL_API_KEY = "os_v2_app_5ozlghixnfhw5blspmry7olbuzq3n3rrcsiuznmeh6g77fwsc3xzqxjodx72vvqt5gvozkovcla7bfeng2sqrzww76y7g6tukxljz4q"
 
     if len(notifications)  < 1:
         print(f'dia - {dia_actual} - no hay notificacions')

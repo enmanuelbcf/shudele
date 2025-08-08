@@ -213,7 +213,7 @@ class ServiceData:
                 SELECT A.hora_inicio, A.hora_fin, U.acronimo_universidad, A.nombre
                 FROM Asignatura A
                 JOIN Universidad U ON A.universidad_id = U.universidad_id
-                WHERE A.username = 'admin' AND A.dia = %s
+                WHERE A.username = 'ediaz' AND A.dia = %s
                 ORDER BY A.hora_inicio
             """, [dia])
             asignaturas = cursor.fetchall()
